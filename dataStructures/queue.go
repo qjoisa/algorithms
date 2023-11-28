@@ -1,33 +1,70 @@
 package dataStructures
 
-import "errors"
+import (
+	"errors"
+)
 
-type Queue[T any] struct {
+type Queue[T comparable] struct {
 	current, last *elQueue[T]
 }
 
-type elQueue[T any] struct {
+type elQueue[T comparable] struct {
 	next *elQueue[T]
 	val  T
 }
 
-func (q *Queue[T]) Push(v T) {
-	if q.current == nil {
-		q.last = &elQueue[T]{val: v}
+func (q *Queue[T]) Enqueue(v ...T) {
+	if len(v) == 0 {
+		return
+	}
+	var i int
+	if q.IsEmpty() {
+		i = 1
+		q.last = &elQueue[T]{val: v[0]}
 		q.current = q.last
-	} else {
-		q.last.next = &elQueue[T]{val: v}
+	}
+	for ; i < len(v); i++ {
+		q.last.next = &elQueue[T]{val: v[i]}
 		q.last = q.last.next
 	}
 }
 
-func (q *Queue[T]) Pop() (v T, err error) {
-	if q.current == nil {
+func (q *Queue[T]) Dequeue() (v T, err error) {
+	if q.IsEmpty() {
 		return v, errors.New("Queue is empty")
 	}
 	v = q.current.val
 	q.current = q.current.next
 	return v, nil
+}
+
+func (q *Queue[T]) Peek() (T, bool) {
+	if !q.IsEmpty() {
+		return q.current.val, true
+	} else {
+		var v T
+		return v, false
+	}
+}
+
+func (q *Queue[T]) Contains(v T) bool {
+	if q.IsEmpty() {
+		return false
+	}
+	for elem := q.current; elem != nil; elem = elem.next {
+		if elem.val == v {
+			return true
+		}
+	}
+	return false
+}
+
+func (q *Queue[T]) Count() int {
+	var i int
+	for elem := q.current; elem != nil; elem = elem.next {
+		i++
+	}
+	return i
 }
 
 func (q *Queue[T]) IsEmpty() bool {
@@ -36,4 +73,9 @@ func (q *Queue[T]) IsEmpty() bool {
 	} else {
 		return false
 	}
+}
+
+func (q *Queue[T]) Clear() {
+	q.current = nil
+	q.last = nil
 }
